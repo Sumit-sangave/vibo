@@ -1,4 +1,4 @@
-# moodMixDJ
+# Vibo
 
 Music-based Mood DJ — Django backend + React frontend (Vite). Minimal prototype to upload tracks, generate mixes from a mood prompt and play in browser.
 

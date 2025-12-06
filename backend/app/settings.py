@@ -32,6 +32,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+
+
 ROOT_URLCONF = 'app.urls'
 
 TEMPLATES = [
@@ -61,10 +65,11 @@ if POSTGRES_HOST:
             'NAME': os.getenv('POSTGRES_DB', 'moodmix'),
             'USER': os.getenv('POSTGRES_USER', 'postgres'),
             'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'admin123'),
-            'HOST': POSTGRES_HOST,
+            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
             'PORT': os.getenv('POSTGRES_PORT', '5432'),
         }
     }
+
 else:
     DATABASES = {
         'default': {
@@ -85,7 +90,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True # Update as needed for production
 
 # Caching: use redis if REDIS_URL provided
 REDIS_URL = os.getenv('REDIS_URL')

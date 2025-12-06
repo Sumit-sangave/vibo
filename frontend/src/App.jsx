@@ -321,7 +321,7 @@ export default function App() {
       </div>
       <nav className="navbar">
         <div className="nav-left">
-          <div className="logo">mX</div>
+          <div className="logo">Vibo</div>
           <ul className="nav-links">
             <li>Home</li>
             <li>Favorite</li>
@@ -338,9 +338,9 @@ export default function App() {
       </nav>
 
       <div className="hero">
-        <div className="logo">mX</div>
+        <div className="logo">Vibo</div>
         <div>
-          <h1 className="title">moodMixDJ</h1>
+          <h1 className="title">Vibo</h1>
           <div className="subtitle">Upload your tracks — generate mood-based mixes — play instantly</div>
         </div>
       </div>

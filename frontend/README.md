@@ -1,6 +1,6 @@
-# frontend (moodMixDJ)
+# frontend (Vibo)
 
-This is a minimal Vite + React frontend for moodMixDJ.
+This is a minimal Vite + React frontend for Vibo.
 
 Run locally:
 

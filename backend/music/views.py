@@ -82,15 +82,10 @@ class UploadTrackView(APIView):
 
 
 class TrackListView(generics.ListAPIView):
-    """
-    GET /api/tracks/
-    Returns all tracks with Cloudinary URLs for file & cover.
-    """
     queryset = Track.objects.all().prefetch_related('tags').order_by('-uploaded_at')
     serializer_class = TrackSerializer
 
     def get_serializer_context(self):
-        # ensure request is passed so TrackSerializer can build absolute URLs
         ctx = super().get_serializer_context()
         ctx['request'] = self.request
         return ctx

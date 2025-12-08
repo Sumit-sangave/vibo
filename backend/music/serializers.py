@@ -5,27 +5,61 @@ from .models import Track, Playlist, PlaylistItem, Tag
 class TrackSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
     cover_url = serializers.SerializerMethodField()
-    tags = serializers.SlugRelatedField(many=True, slug_field='name', queryset=Tag.objects.all(), required=False)
+    tags = serializers.SlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Tag.objects.all(),
+        required=False
+    )
 
     class Meta:
         model = Track
-        fields = ['id', 'title', 'file', 'url', 'cover_url', 'duration', 'uploaded_at', 'times_selected', 'tags']
+        fields = [
+            'id',
+            'title',
+            'file',
+            'url',
+            'cover_url',
+            'duration',
+            'uploaded_at',
+            'times_selected',
+            'tags',
+        ]
         read_only_fields = ['id', 'uploaded_at', 'times_selected']
+
+    def _absolute_media_url(self, request, url: str):
+        """
+        Ensure media URL is absolute.
+
+        - If Cloudinary gives us a full https URL, just return it.
+        - If we only have a relative path (e.g. `/media/tracks/x.mp3`
+          or `tracks/x.mp3`), build an absolute URL with the backend domain.
+        """
+        if not url:
+            return None
+
+        # Already absolute (Cloudinary, etc.)
+        if url.startswith('http://') or url.startswith('https://'):
+            return url
+
+        if request is not None:
+            return request.build_absolute_uri(url)
+
+        return url
 
     def get_url(self, obj):
         request = self.context.get('request')
-        if request:
-            return request.build_absolute_uri(obj.file.url)
-        return obj.file.url
+        try:
+            return self._absolute_media_url(request, obj.file.url)
+        except Exception:
+            return None
 
     def get_cover_url(self, obj):
         if not obj.cover:
             return None
         request = self.context.get('request')
         try:
-            if request:
-                return request.build_absolute_uri(obj.cover.url)
-            return obj.cover.url
+            return self._absolute_media_url(request, obj.cover.url)
         except Exception:
             return None
 
@@ -47,4 +81,8 @@ class PlaylistSerializer(serializers.ModelSerializer):
 
     def get_items(self, obj):
         items = obj.playlistitem_set.all()
-        return PlaylistItemSerializer(items, many=True, context=self.context).data
+        return PlaylistItemSerializer(
+            items,
+            many=True,
+            context=self.context
+        ).data

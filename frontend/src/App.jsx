@@ -4,6 +4,17 @@ import axios from 'axios'
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
+
+// Helper to ensure we always hit the correct host
+function resolveMediaUrl(u) {
+  if (!u) return ''
+  // Already absolute (Cloudinary, etc.)
+  if (u.startsWith('http://') || u.startsWith('https://')) return u
+  // Relative path -> attach backend base URL
+  if (u.startsWith('/')) return `${BACKEND}${u}`
+  return `${BACKEND}/${u}`
+}
+
 // ---- helpers to fix and normalize media URLs ----
 function fixMediaUrl(url) {
   if (!url) return url
@@ -147,6 +158,25 @@ export default function App() {
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume
   }, [volume])
+
+
+  useEffect(() => {
+  if (!playlist || !playlist.items || playlist.items.length === 0) return
+  const item = playlist.items[currentIndex]
+  if (!item || !item.track) return
+  const url = resolveMediaUrl(item.track.url)
+  if (!url || !audioRef.current) return
+
+  audioRef.current.src = url
+  audioRef.current.volume = volume
+  audioRef.current
+    .play()
+    .then(() => setPlaying(true))
+    .catch((e) => console.warn('play prevented', e))
+
+  try { setCurrentTrack(item.track) } catch (e) {}
+}, [currentIndex, playlist])
+
 
   // ---- API calls ----
 
@@ -663,23 +693,24 @@ export default function App() {
             </div>
             <ul className="track-list">
               {tracks.map((t) => (
-                <li
-                  key={t.id}
-                  className="track-item"
-                  onClick={() => {
-                    if (t.url) {
-                      audioRef.current.src = t.url
-                      audioRef.current.play().catch(() => {})
-                      setPlaying(true)
-                    }
-                    setModalTrack(t)
-                    setCurrentTrack(t)
-                  }}
-                >
+                  <li
+                    key={t.id}
+                    className="track-item"
+                    onClick={() => {
+                      const url = resolveMediaUrl(t.url)
+                      if (url && audioRef.current) {
+                        audioRef.current.src = url
+                        audioRef.current.play().catch(() => {})
+                        setPlaying(true)
+                      }
+                      setModalTrack(t)
+                      setCurrentTrack(t)
+                    }}
+                  >
                   <div className="track-meta">
                     <div className="art">
                       {t.cover_url ? (
-                        <img src={t.cover_url} alt={t.title} />
+                        <img src={resolveMediaUrl(t.cover_url)} alt={t.title} />
                       ) : (
                         <div className="art-placeholder">♪</div>
                       )}
@@ -810,8 +841,9 @@ export default function App() {
                   key={t.id}
                   className="top-track-item"
                   onClick={() => {
-                    if (t.url) {
-                      audioRef.current.src = t.url
+                    const url = resolveMediaUrl(t.url)
+                    if (url && audioRef.current) {
+                      audioRef.current.src = url
                       audioRef.current.play().catch(() => {})
                       setPlaying(true)
                     }
@@ -819,9 +851,11 @@ export default function App() {
                     setCurrentTrack(t)
                   }}
                 >
+
+
                   <div className="top-art">
                     {t.cover_url ? (
-                      <img src={t.cover_url} alt={t.title} />
+                      <img src={resolveMediaUrl(t.cover_url)} alt={t.title} />
                     ) : (
                       <div className="art-placeholder">♪</div>
                     )}
@@ -868,8 +902,9 @@ export default function App() {
                 <button
                   className="btn"
                   onClick={() => {
-                    if (modalTrack.url) {
-                      audioRef.current.src = modalTrack.url
+                    const url = resolveMediaUrl(modalTrack.url)
+                    if (url && audioRef.current) {
+                      audioRef.current.src = url
                       audioRef.current.play().catch(() => {})
                       setPlaying(true)
                     }
@@ -877,6 +912,7 @@ export default function App() {
                 >
                   Play
                 </button>
+
               </div>
             </div>
           </div>
@@ -918,7 +954,7 @@ export default function App() {
                     >
                       <div className="top-art">
                         {t.cover_url ? (
-                          <img src={t.cover_url} alt={t.title} />
+                          <img src={resolveMediaUrl(t.cover_url)} alt={t.title} />
                         ) : (
                           <div className="art-placeholder">♪</div>
                         )}
@@ -958,7 +994,7 @@ export default function App() {
                     <li key={t.id} className="top-track-item">
                       <div className="top-art">
                         {t.cover_url ? (
-                          <img src={t.cover_url} alt={t.title} />
+                          <img src={resolveMediaUrl(t.cover_url)} alt={t.title} />
                         ) : (
                           <div className="art-placeholder">♪</div>
                         )}
@@ -973,8 +1009,9 @@ export default function App() {
                         <button
                           className="icon-btn"
                           onClick={() => {
-                            if (t.url) {
-                              audioRef.current.src = t.url
+                            const url = resolveMediaUrl(t.url)
+                            if (url && audioRef.current) {
+                              audioRef.current.src = url
                               audioRef.current.play().catch(() => {})
                               setPlaying(true)
                             }
@@ -985,6 +1022,7 @@ export default function App() {
                         >
                           Play
                         </button>
+
                         <button
                           className="icon-btn"
                           onClick={() => toggleFavorite(t)}
@@ -1045,8 +1083,10 @@ export default function App() {
                     className="btn"
                     onClick={(e) => {
                       e.stopPropagation()
-                      if (currentTrack.url) {
-                        audioRef.current.src = currentTrack.url
+                      if (!currentTrack) return
+                      const url = resolveMediaUrl(currentTrack.url)
+                      if (url && audioRef.current) {
+                        audioRef.current.src = url
                         audioRef.current.play().catch(() => {})
                         setPlaying(true)
                       }
@@ -1054,6 +1094,7 @@ export default function App() {
                   >
                     Play
                   </button>
+
                   <button
                     className="btn"
                     style={{ marginLeft: 8 }}

@@ -7,7 +7,11 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret')
 DEBUG = os.getenv('DEBUG', '1') in ['1', 'True', 'true']
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+ALLOWED_HOSTS = os.getenv(
+    'ALLOWED_HOSTS',
+    'vibo-backend.onrender.com,localhost,127.0.0.1'
+).split(',')
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',

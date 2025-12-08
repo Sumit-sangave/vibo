@@ -1,17 +1,5 @@
 from django.db import models
-
-
-class Track(models.Model):
-    title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='tracks/')
-    cover = models.FileField(upload_to='covers/', null=True, blank=True)
-    duration = models.FloatField(null=True, blank=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-    times_selected = models.IntegerField(default=0)
-    tags = models.ManyToManyField('Tag', blank=True)
-
-    def __str__(self):
-        return self.title
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 
 class Tag(models.Model):
@@ -19,6 +7,34 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Track(models.Model):
+    title = models.CharField(max_length=255)
+
+    # Store audio file on Cloudinary
+    file = models.FileField(
+        upload_to='tracks/',
+        storage=MediaCloudinaryStorage(),
+    )
+
+    # Store cover image on Cloudinary
+    cover = models.FileField(
+        upload_to='covers/',
+        storage=MediaCloudinaryStorage(),
+        null=True,
+        blank=True,
+    )
+
+    duration = models.FloatField(null=True, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    times_selected = models.IntegerField(default=0)
+
+    # Many-to-many with Tag
+    tags = models.ManyToManyField(Tag, blank=True)
+
+    def __str__(self):
+        return self.title
 
 
 class Playlist(models.Model):
